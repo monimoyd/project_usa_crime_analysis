@@ -1,0 +1,41 @@
+crime_details = LOAD '/home/acadgild/project1/Crimes_-_2001_to_present.csv' 
+USING PigStorage(',') AS (ID:long, CaseNumber:chararray, Date:chararray,
+Block:chararray, IUCR:chararray, PrimaryType:chararray, Description:chararray,
+LocationDescription:chararray,Arrest:chararray, Domestic:chararray,
+Beat:chararray, District:chararray, Ward:chararray, CommunityArea:chararray,
+FBICode:chararray, extra:chararray, XCoordinate:chararray,
+YCoordinate:chararray,Year:chararray, UpdatedOn:chararray, Latitude:chararray, 
+
+crime_details_group_by_fbi_code = GROUP crime_details BY FBICode;
+
+Longitude:chararray, Location:chararray);
+
+one_record = LIMIT crime_details 1;
+dump one_record;
+
+
+crime_details_group_by_fbi_code = GROUP crime_details BY FBICode;
+no_of_cases_count_by_fbi_code = FOREACH crime_details_group_by_fbi_code GENERATE group AS grp, COUNT(crime_details.CaseNumber);
+dump no_of_cases_count_by_fbi_code;
+
+Task2:
+
+no_of_cases_count_fbi_code_32 = FILTER no_of_cases_count_by_fbi_code BY grp=='32';
+dump no_of_cases_count_fbi_code_32;
+
+
+Task3:
+
+crime_details_theft_arrested = FILTER crime_details BY PrimaryType == 'THEFT' AND Arrest == 'true';
+crime_details_theft_arrested_by_district = GROUP crime_details_theft_arrested BY District;
+crime_details_theft_arrested_count_by_district = FOREACH crime_details_theft_arrested_by_district GENERATE group AS grp, COUNT(crime_details_theft_arrested.CaseNumber);
+
+
+Tas4:
+
+crime_details_arrested = FILTER crime_details BY Arrest == 'true';
+crime_details_arrested_between_dates = FILTER crime_details_arrested BY ToDate(Date, 'MM/dd/yyyy hh:mm:ss a') >= ToDate('10/01/2014 12:00:00 AM', 'MM/dd/yyyy hh:mm:ss a') AND ToDate(Date, 'MM/dd/yyyy hh:mm:ss a') <= ToDate('10/31/2015 11:59:59 PM', 'MM/dd/yyyy hh:mm:ss a');
+crime_details_arrested_between_dates_all = GROUP crime_details_arrested_between_dates ALL;
+crime_details_no_of_arrests = FOREACH crime_details_arrested_between_dates_all GENERATE COUNT(crime_details_arrested_between_dates.CaseNumber) AS no_of_arrests;
+dump crime_details_no_of_arrests;
+
